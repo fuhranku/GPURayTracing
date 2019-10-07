@@ -364,6 +364,8 @@ void getVolumesBackface() {
 void drawQuad(){
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	rayTracingShader->use();
+	rayTracingShader->setVec3("eye", camera.position);
+	//rayTracingShader->setMat4(inverseVP);
 	//Binds the vertex array to be drawn
 	glBindVertexArray(VAO);
 	// Renders the triangle geometry
