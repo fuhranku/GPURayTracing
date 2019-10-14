@@ -17,7 +17,7 @@ GLFWwindow *window;
 // Camera class
 Camera camera;
 // Shader object
-Shader *rayTracingShader, *cubeShader, *frameBufferDebug;
+Shader *rayTracingShader;
 // Index (GPU) of the geometry buffer
 unsigned int VBO, cubeVBO;
 // Index (GPU) vertex array object

@@ -73,9 +73,7 @@ bool init() {
 	// Initialize the opengl context
 	initGL();
 	// Loads the shader
-	rayTracingShader = new Shader("assets/shaders/basic.vert", "assets/shaders/basic.frag");
-	cubeShader = new Shader("assets/shaders/cubeShader.vert", "assets/shaders/cubeShader.frag");
-	frameBufferDebug = new Shader("assets/shaders/frameBufferDebug.vert", "assets/shaders/frameBufferDebug.frag");
+	rayTracingShader = new Shader("assets/shaders/rayTracing.vert", "assets/shaders/rayTracing.frag");
 	// Loads all the geometry into the GPU
 	buildGeometry();
 
@@ -224,11 +222,7 @@ void processKeyboardInput(GLFWwindow *window){
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS){
         // Reloads the shader
         delete rayTracingShader;
-		rayTracingShader = new Shader("assets/shaders/basic.vert", "assets/shaders/basic.frag");
-		delete cubeShader;
-		cubeShader = new Shader("assets/shaders/cubeShader.vert", "assets/shaders/cubeShader.frag");
-		delete frameBufferDebug;
-		frameBufferDebug = new Shader("assets/shaders/frameBufferDebug.vert", "assets/shaders/frameBufferDebug.frag");
+		rayTracingShader = new Shader("assets/shaders/rayTracing.vert", "assets/shaders/rayTracing.frag");
     }
 
 
@@ -319,51 +313,31 @@ bool setFrameBuffer() {
 	return true;
 }
 
-void getVolumesBackface() {
-
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
-	// Set full-screen viewport
-	glViewport(0, 0, windowWidth, windowHeight);
-
-	// View matrix
-	View = camera.getWorldToViewMatrix();
-	// Projection matrix
-	Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-	// World transformation
-	ModelMatrix = glm::mat4(1.0f);
-	// Shader uniform parameters
-	cubeShader->use();
-	cubeShader->setMat4("model", ModelMatrix);
-	cubeShader->setMat4("view", View);
-	cubeShader->setMat4("projection", Projection);
-	//Binds the vertex array to be drawn
-	glBindVertexArray(cubeVAO);
-	// Renders the triangle gemotry
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-	glBindVertexArray(0);
-	glCullFace(GL_BACK);
-
-	/* For DEBUG purposes only */
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	// Use the shader
-	frameBufferDebug->use();
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, renderedTexture);
-	//Draw QUAD for debug purposes
-	//Binds the vertex array to be drawn
-	glBindVertexArray(VAO);
-	// Renders the triangle geometry
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glBindVertexArray(0);
-
-}
-
 void drawQuad(){
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	rayTracingShader->use();
+
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)windowWidth / (float)windowHeight, .5f, 1000.0f);
+	//glm::mat4 projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+
+
+	glm::vec3 position = glm::vec3(0, 0, 5);
+	glm::vec3 direction = glm::vec3(0, 0, -1);
+	glm::vec3 up = glm::vec3(0, 1, 0);
+
+	glm::mat4 view = glm::lookAt(
+		position, // Camera is at (4,3,3), in world space
+		position + direction, // and looks at the origin
+		up  // Head is up (set to 0,-1,0 to look upside-down) 
+	);
+
+	glm::mat4 model = glm::mat4(1.0f); //model matrix: an identity matrix (model will be at the origin)
+
+	rayTracingShader->setMat4("model", model);
+	rayTracingShader->setMat4("view", view);
+	rayTracingShader->setMat4("projection", projection);
+	rayTracingShader->setVec3("cameraPos", position);
+
 	//Binds the vertex array to be drawn
 	glBindVertexArray(VAO);
 	// Renders the triangle geometry
@@ -426,7 +400,7 @@ int main(int argc, char const *argv[]){
     // Deletes the vertex object from the GPU
     glDeleteBuffers(1, &VBO);
     // Destroy the shader
-    delete rayTracingShader, cubeShader, frameBufferDebug;
+    delete rayTracingShader;
 
     // Stops the glfw program
     glfwTerminate();
