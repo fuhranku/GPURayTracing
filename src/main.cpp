@@ -68,7 +68,7 @@ void initGL(){
 bool init() {
 
 	// Initialize the window, glad components and framebuffer
-	if (!initWindow() || !initGlad() || !setFrameBuffer())
+	if (!initWindow() || !initGlad())
 		return false;
 	// Initialize the opengl context
 	initGL();
@@ -84,10 +84,10 @@ void buildGeometry(){
 	// Quad for debug purposes:
 	float quadVertices[] = {
 		// positions        // Color   		   // texture Coords
-		-1.0f,  1.0f, -0.5f, 1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
-		-1.0f, -1.0f, -0.5f, 0.0f, 1.0f, 0.0f,  0.0f, 0.0f,
-		 1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 1.0f,  1.0f, 1.0f,
-		 1.0f, -1.0f, -0.5f, 0.5f, 0.5f, 0.75f, 1.0f, 0.0f,
+		-1.0f,  1.0f, -0.5f,
+		-1.0f, -1.0f, -0.5f,
+		 1.0f,  1.0f, -0.5f,
+		 1.0f, -1.0f, -0.5f
 	};
 	// Setup plane VAO
 	glGenVertexArrays(1, &VAO);
@@ -97,68 +97,7 @@ void buildGeometry(){
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
 	// Position
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	// Color
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	// Texture Coords
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-
-
-	// ---------------------------------------------------------------------------------------------------------
-	// ---------------------------------------------------------------------------------------------------------
-
-	// Cube where volume will be:
-	float cubeVertices[] = {
-    -0.5f,-0.5f,-0.5f, 
-	-0.5f,-0.5f, 0.5f,
-	-0.5f, 0.5f, 0.5f, 
-	 0.5f, 0.5f,-0.5f, 
-	-0.5f,-0.5f,-0.5f,
-	-0.5f, 0.5f,-0.5f, 
-	 0.5f,-0.5f, 0.5f,
-	-0.5f,-0.5f,-0.5f,
-	 0.5f,-0.5f,-0.5f,
-	 0.5f, 0.5f,-0.5f,
-	 0.5f,-0.5f,-0.5f,
-	-0.5f,-0.5f,-0.5f,
-	-0.5f,-0.5f,-0.5f,
-	-0.5f, 0.5f, 0.5f,
-	-0.5f, 0.5f,-0.5f,
-	 0.5f,-0.5f, 0.5f,
-	-0.5f,-0.5f, 0.5f,
-	-0.5f,-0.5f,-0.5f,
-	-0.5f, 0.5f, 0.5f,
-	-0.5f,-0.5f, 0.5f,
-	 0.5f,-0.5f, 0.5f,
-	 0.5f, 0.5f, 0.5f,
-	 0.5f,-0.5f,-0.5f,
-	 0.5f, 0.5f,-0.5f,
-	 0.5f,-0.5f,-0.5f,
-	 0.5f, 0.5f, 0.5f,
-	 0.5f,-0.5f, 0.5f,
-	 0.5f, 0.5f, 0.5f,
-	 0.5f, 0.5f,-0.5f,
-	-0.5f, 0.5f,-0.5f,
-	 0.5f, 0.5f, 0.5f,
-	-0.5f, 0.5f,-0.5f,
-	-0.5f, 0.5f, 0.5f,
-	 0.5f, 0.5f, 0.5f,
-	-0.5f, 0.5f, 0.5f,
-	 0.5f,-0.5f, 0.5f
-	};
-	// Setup plane VAO
-	glGenVertexArrays(1, &cubeVAO);
-	glGenBuffers(1, &cubeVBO);
-	glBindVertexArray(cubeVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
-	// Position
-	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-
 }
 
 unsigned int loadTexture(const char *path){
@@ -277,46 +216,10 @@ void onMouseMotion(GLFWwindow* window, double xpos, double ypos){
 	}
 }
 
-bool setFrameBuffer() {
-	glGenFramebuffers(1, &framebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-	// The texture we're going to render to
-	glGenTextures(1, &renderedTexture);
-	// "Bind" the newly created texture : all future texture functions will modify this texture
-	glBindTexture(GL_TEXTURE_2D, renderedTexture);
-
-	// Give an empty image to OpenGL (Which is done with last "0")
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, windowWidth, windowHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-	// Depth buffer
-	glGenRenderbuffers(1, &depthRenderBuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, windowWidth, windowHeight);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer);
-
-	// Frame buffer configuration
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture,0);
-
-	// Set list of draw buffers
-	GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, DrawBuffers);
-
-	// Always check that our framebuffer is ok
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		std::cout << "ERROR::Framebuffer configuration went wrong" << std::endl;
-		return false;
-	}
-	return true;
-}
-
 void drawQuad(){
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	rayTracingShader->use();
-<<<<<<< HEAD
+
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)windowWidth / (float)windowHeight, .5f, 1000.0f);
 	glm::mat4 view = camera.getWorldToViewMatrix();
@@ -324,11 +227,6 @@ void drawQuad(){
 	glm::mat4 invVP = glm::inverse(vp);
 	rayTracingShader->setMat4("invVP", invVP);
 	rayTracingShader->setVec3("eye", camera.position);
-
-=======
-	rayTracingShader->setVec3("eye", camera.position);
-	//rayTracingShader->setMat4(inverseVP);
->>>>>>> test-branch
 	//Binds the vertex array to be drawn
 	glBindVertexArray(VAO);
 	// Renders the triangle geometry
@@ -340,9 +238,6 @@ void render(){
 
     // Clears the color and depth buffers from the frame buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Draw front-faced culling volume
-	//getVolumesBackface();
 
 	// Draw QUAD
 	drawQuad();

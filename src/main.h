@@ -19,13 +19,11 @@ Camera camera;
 // Shader object
 Shader *rayTracingShader;
 // Index (GPU) of the geometry buffer
-unsigned int VBO, cubeVBO;
+unsigned int VBO;
 // Index (GPU) vertex array object
-unsigned int VAO, cubeVAO;
+unsigned int VAO;
 // Index (GPU) of the texture
 unsigned int textureID;
-unsigned int framebuffer = 0;
-unsigned int renderedTexture, depthRenderBuffer;
 // Time control variables
 float deltaTime = 0.0f, lastFrame = 0.0f;
 float mouseSpeed = 16.0f;
@@ -100,10 +98,6 @@ void processKeyboardInput(GLFWwindow *window);
 void onKeyPress(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 void onMouseMotion(GLFWwindow* window, double xpos, double ypos);
-
-bool setFrameBuffer();
-
-void getVolumesBackface();
 
 void drawQuad();
 

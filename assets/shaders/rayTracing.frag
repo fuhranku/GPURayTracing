@@ -1,71 +1,151 @@
 #version 330 core
 // Vertex color (interpolated/fragment)
 in vec3 vPos;
+in mat4 ivp;
 
 // Uniforms 
 uniform mat4 invVP;
 uniform vec3 eye;
 uniform vec2 windowSize;
 
+// Sphere
+struct Sphere{
+	vec3 normal;
+	vec3 center;
+	vec3 diffuse;
+	vec3 specular;
+	float radius;
+};
+
+struct Plane{
+	vec3 n;
+	vec3 p0;
+	vec3 diffuse;
+	vec3 specular;
+};
+
+struct Intersect{
+	vec3 pos;
+	vec3 normal;
+	vec3 diffuse;
+	vec3 specular;
+	float t;
+};
+
+// Models
+Plane plane[5];
+Sphere sphere[2];
+
 // Fragment Color
 out vec4 fragColor;
 
-// Sc : Sphere center / Rp: Ray point / Rd: Ray direction
-vec4 intersectSphere(vec3 Sc, vec3 Rp, vec3 Rd) {
+// Point light
+vec3 lightPos = vec3(0.0f,0.0f,1.0f);
 
-	//Ri = [xi, yi, zi] = [x0 + xd * ti ,  y0 + yd * ti,  z0 + zd * ti]
-	// Ecuación del rayo
-	// R(t) = R0 + t * Rd 
-	// R0 : eye -
-	// t  : es el lugar en donde se está en el rayo
-	// Rd : Dirección del rayo -> rayDirection
-	// B = 2 * (Xd * (X0 - Xc) + Yd * (Y0 - Yc) + Zd * (Z0 - Zc))
-	// C = (X0 - Xc)^2 + (Y0 - Yc)^2 + (Z0 - Zc)^2 - Sr^2
-	//t1 = (- B + (B^2 - 4*C) ^ 1/2) / 2 donde t0 es para el caso (-) y t1 para el (+)
-
-	// Sphere radius
-	float Sr = 0.5f;
-	float X0XC = Rp.x - Sc.x;
-	float Y0YC = Rp.y - Sc.y;
-	float Z0ZC = Rp.z - Sc.z;
-	// Compute B
-	float B = 2 * (Rd.x * X0XC + Rd.y * Y0YC  + Rd.z * Z0ZC);
-	// Compute C
-	float C = X0XC*X0XC + Y0YC*Y0YC + Z0ZC*Z0ZC - Sr*Sr;
-	// Determine if there's an intersection
-	float det = B*B - 4*C;
-	if (det < 0.0f)
-		return vec4(0.0f,0.0f,0.0f,1.0f);
-	else
-		return vec4(1.0f,0.0f,0.0f,1.0f);
-	//FOR FURTHER COMPUTATION
-	//	// Compute t1
-	//	float t1 = (-B + pow((B*B - 4*C),0.5)) / 2;
-	//	// Intersection point
-	//	vec3 Ri = vec3(Rp.x + Rd.x * t1, Rp.y + Rd.y * t1, Rp.z + Rd.z * t1);
-	// Obtengo la normal (vector del centro al punto de int)
-	// 
-
+// Create scene function
+void createScene(){
+	// Init planes:
+		// Normal - p0 - diffuse - spec
+		// Left-side wall
+		plane[0] = Plane(vec3(1.0f,0.0f,0.0f),vec3(-20.0f,0.0f,0.0f),vec3(1.0f,1.0f,1.0f),vec3(0.0f,1.0f,1.0f));
+		// Right-side wall
+		plane[1] = Plane(vec3(-1.0f,0.0f,0.0f),vec3(20.0f,0.0f,0.0f),vec3(1.0f,1.0f,1.0f),vec3(0.0f,1.0f,1.0f));
+		// Back-side wall
+		plane[2] = Plane(vec3(0.0f,0.0f,1.0f),vec3(0.0f,0.0f,-20.0f),vec3(1.0f,1.0f,1.0f),vec3(0.0f,1.0f,1.0f));
+		// Top-side wall
+		plane[3] = Plane(vec3(0.0f,-1.0f,0.0f),vec3(0.0f,10.0f,0.0f),vec3(1.0f,1.0f,1.0f),vec3(0.0f,1.0f,1.0f));
+		// Bottom-side wall
+		plane[4] = Plane(vec3(0.0f,1.0f,0.0f),vec3(0.0f,-10.0f,0.0f),vec3(1.0f,1.0f,1.0f),vec3(0.0f,1.0f,1.0f));
+	// Init spheres:
+		// Normal - center - diffuse - specular - radius
+		sphere[0] = Sphere(vec3(0.0f,0.0f,0.0f),vec3(-2.5f,0,-3.0f), vec3(1.0f,0.0f,0.0f),vec3(0.0f,1.0f,0.0f),1.5f);
+		sphere[1] = Sphere(vec3(0.0f,0.0f,0.0f),vec3(2.5f,0,-3.0f), vec3(0.0f,0.0f,1.0f),vec3(1.0f,0.0f,0.0f),1.0f);
 }
 
 
+// Sc : Sphere center / Rp: Ray point / Rd: Ray direction
+Intersect intersectSphere(vec3 Rp, vec3 Rd, Sphere sphere){
+	// Sphere radius
+	float X0XC = Rp.x - sphere.center.x;
+	float Y0YC = Rp.y - sphere.center.y;
+	float Z0ZC = Rp.z - sphere.center.z;
+	// Compute B
+	float B = 2 * (Rd.x * X0XC + Rd.y * Y0YC  + Rd.z * Z0ZC);
+	// Compute C
+	float C = X0XC*X0XC + Y0YC*Y0YC + Z0ZC*Z0ZC - sphere.radius*sphere.radius;
+	// Determine if there's an intersection by using determinant
+	float det = B*B - 4*C;
+	if (det < 0.0f)
+		return Intersect(vec3(0.0f,0.0f,100.0f),vec3(0.0f,0.0f,0.0f),vec3(0.0f,0.0f,0.0f),vec3(0.0f,0.0f,100.0f),10000f);
+	else{
+		// Compute t
+		float t0 = (-B - pow(det,0.5f)) / 2;
+		// Intersection point
+		vec3 Ri = vec3(Rp.x + Rd.x * t0, Rp.y + Rd.y * t0, Rp.z + Rd.z * t0);
+		// Compute sphere normal
+		vec3 normal = normalize(Ri - sphere.center);
+		sphere.normal = normal;
+		return Intersect(Ri,sphere.normal,sphere.diffuse,sphere.specular,t0);
+	}
 
-void main()
-{
+}
 
-    vec3 sphereCenter = vec3(0,0,-3.0f);
+Intersect intersectPlane(vec3 Rp, vec3 Rd, Plane plane){
+	// P0: plane's point
+	// n : plane's normal
+	// Determine if given point p is on plane: (p-p0) . n = 0
+	float t = dot((plane.p0 - Rp),plane.n) / dot(Rd,plane.n);
+	// There's an intersection with the plane if t >= 0
+	if (t < 0.0f)
+		return Intersect(vec3(0.0f,0.0f,100.0f),vec3(0.0f,0.0f,0.0f),plane.diffuse,plane.specular,10000f);
+	else{
+		vec3 Ri = Rp + Rd*t;
+		return Intersect(Ri,plane.n,plane.diffuse,plane.specular,t);
+	}
+}
 
-   // vec3 sphereWorld = (invVP * vec4(sphereCenter,1)).xyz;
+Intersect cast1stRay(vec3 Rp, vec3 Rd){
+	// Compare against all planes
+	Intersect mi, ret;
+	ret.t = 10000f;
+	for (int i=0;i<5;i++){
+		mi = intersectPlane(Rp,Rd,plane[i]);
+		if (mi.t < ret.t) 
+			ret = mi;
+	}
+	// Compare agaisnt all spheres
+	for (int i=0;i<2;i++){
+		mi = intersectSphere(Rp,Rd,sphere[i]);
+		if (mi.t < ret.t)
+			ret = mi;
+	}
+	return ret;
+}
 
-
-
-//    vec3 planeWorld = (invVP * vec4(coord,1,1)).xyz;
-
+void main(){
     vec3 rayDir = normalize(vPos - eye);
+	// Creating scene
+	createScene();
+	//Intersect intersect = intersectSphere(sphereCenter, eye, rayDir);
+	Intersect intersect = cast1stRay(eye,rayDir);
+	// Attenuation
+//    float distance    = length(lightPos - intersect.pos);
+//    float attenuation = 1.0 / (0.5f + 0.8f * distance + 
+//                        0.4f * (distance * distance)); 
+	// Blinn Phong
+		vec3 lightDir = normalize(lightPos - intersect.pos);
+		// Diffuse component (LAMBERT)
+		float diff = clamp(dot(intersect.normal,lightDir),0.0f,1.0f);
+		// Specular component
+		vec3 halfwayDir = normalize(lightDir+rayDir);
+		float spec = pow(clamp(dot(intersect.normal,halfwayDir),0.0f,1.0f),2.0f);
+	// Diffuse contribution
+	vec3 diffuse = intersect.diffuse * diff;
+	// Specular contribution
+	vec3 specular = intersect.specular * spec;
 
-    fragColor = intersectSphere(sphereCenter, eye, rayDir);
+	vec3 result = diffuse + specular;
+    fragColor = vec4(result,1.0f);
 
 	//fragColor = vec4(vPos,1.0f);
-
-    
 }

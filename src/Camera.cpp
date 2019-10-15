@@ -4,9 +4,9 @@ const float MOVEMENT_SPEED = 4.0f;
 
 
 Camera::Camera() :
-	viewDirection(0,0,-1),
+	viewDirection(0, 0, -1),
 	UP(0.0f, 1.0f, 0.0f),
-	position(0, 0, 0)
+	position(0, 0, 1.281f)
 {
 	yaw = 0.0f;
 	pitch = 0.0f;
