@@ -15,34 +15,10 @@
     <ClInclude Include="src\Shader.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="assets\shaders\basic.frag">
+    <None Include="assets\shaders\rayTracing.frag">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="assets\shaders\basic.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="assets\shaders\cubeShader.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="assets\shaders\cubeShader.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="assets\shaders\frameBufferDebug.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="assets\shaders\frameBufferDebug.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="assets\shaders\rayCasting.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="assets\shaders\rayCasting.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="assets\shaders\rayCastingOut.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="assets\shaders\rayCastingOut.vert">
+    <None Include="assets\shaders\rayTracing.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

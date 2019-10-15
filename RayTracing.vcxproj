@@ -142,16 +142,8 @@
     <ClInclude Include="src\Shader.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="assets\shaders\basic.frag" />
-    <None Include="assets\shaders\basic.vert" />
-    <None Include="assets\shaders\cubeShader.frag" />
-    <None Include="assets\shaders\cubeShader.vert" />
-    <None Include="assets\shaders\frameBufferDebug.frag" />
-    <None Include="assets\shaders\frameBufferDebug.vert" />
-    <None Include="assets\shaders\rayCasting.frag" />
-    <None Include="assets\shaders\rayCasting.vert" />
-    <None Include="assets\shaders\rayCastingOut.frag" />
-    <None Include="assets\shaders\rayCastingOut.vert" />
+    <None Include="assets\shaders\rayTracing.frag" />
+    <None Include="assets\shaders\rayTracing.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
