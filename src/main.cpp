@@ -316,6 +316,7 @@ bool setFrameBuffer() {
 void drawQuad(){
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	rayTracingShader->use();
+<<<<<<< HEAD
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)windowWidth / (float)windowHeight, .5f, 1000.0f);
 	glm::mat4 view = camera.getWorldToViewMatrix();
@@ -324,6 +325,10 @@ void drawQuad(){
 	rayTracingShader->setMat4("invVP", invVP);
 	rayTracingShader->setVec3("eye", camera.position);
 
+=======
+	rayTracingShader->setVec3("eye", camera.position);
+	//rayTracingShader->setMat4(inverseVP);
+>>>>>>> test-branch
 	//Binds the vertex array to be drawn
 	glBindVertexArray(VAO);
 	// Renders the triangle geometry
