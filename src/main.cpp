@@ -84,10 +84,10 @@ void buildGeometry(){
 	// Quad for debug purposes:
 	float quadVertices[] = {
 		// positions        // Color   		   // texture Coords
-		-1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
-		-1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,  0.0f, 0.0f,
-		 1.0f,  1.0f, 0.0f, 0.0f, 0.0f, 1.0f,  1.0f, 1.0f,
-		 1.0f, -1.0f, 0.0f, 0.5f, 0.5f, 0.75f, 1.0f, 0.0f,
+		-1.0f,  1.0f, -0.5f, 1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f, -0.5f, 0.0f, 1.0f, 0.0f,  0.0f, 0.0f,
+		 1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 1.0f,  1.0f, 1.0f,
+		 1.0f, -1.0f, -0.5f, 0.5f, 0.5f, 0.75f, 1.0f, 0.0f,
 	};
 	// Setup plane VAO
 	glGenVertexArrays(1, &VAO);
@@ -318,25 +318,11 @@ void drawQuad(){
 	rayTracingShader->use();
 
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)windowWidth / (float)windowHeight, .5f, 1000.0f);
-	//glm::mat4 projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-
-
-	glm::vec3 position = glm::vec3(0, 0, 5);
-	glm::vec3 direction = glm::vec3(0, 0, -1);
-	glm::vec3 up = glm::vec3(0, 1, 0);
-
-	glm::mat4 view = glm::lookAt(
-		position, // Camera is at (4,3,3), in world space
-		position + direction, // and looks at the origin
-		up  // Head is up (set to 0,-1,0 to look upside-down) 
-	);
-
-	glm::mat4 model = glm::mat4(1.0f); //model matrix: an identity matrix (model will be at the origin)
-
-	rayTracingShader->setMat4("model", model);
-	rayTracingShader->setMat4("view", view);
-	rayTracingShader->setMat4("projection", projection);
-	rayTracingShader->setVec3("cameraPos", position);
+	glm::mat4 view = camera.getWorldToViewMatrix();
+	glm::mat4 vp = projection * view;
+	glm::mat4 invVP = glm::inverse(vp);
+	rayTracingShader->setMat4("invVP", invVP);
+	rayTracingShader->setVec3("eye", camera.position);
 
 	//Binds the vertex array to be drawn
 	glBindVertexArray(VAO);

@@ -1,22 +1,22 @@
 #version 330 core
 // Vertex color (interpolated/fragment)
 in vec3 vPos;
-in mat4 mvp;
 
 // Uniforms 
-uniform vec3 cameraPos;
+uniform mat4 invVP;
+uniform vec3 eye;
 uniform vec2 windowSize;
 
 // Fragment Color
 out vec4 fragColor;
 
 // Sc : Sphere center / Rp: Ray point / Rd: Ray direction
-bool intersectSphere(vec3 Sc, vec3 Rp, vec3 Rd, out float distance) {
+vec4 intersectSphere(vec3 Sc, vec3 Rp, vec3 Rd) {
 
 	//Ri = [xi, yi, zi] = [x0 + xd * ti ,  y0 + yd * ti,  z0 + zd * ti]
 	// Ecuación del rayo
 	// R(t) = R0 + t * Rd 
-	// R0 : cameraPos -
+	// R0 : eye -
 	// t  : es el lugar en donde se está en el rayo
 	// Rd : Dirección del rayo -> rayDirection
 	// B = 2 * (Xd * (X0 - Xc) + Yd * (Y0 - Yc) + Zd * (Z0 - Zc))
@@ -35,14 +35,17 @@ bool intersectSphere(vec3 Sc, vec3 Rp, vec3 Rd, out float distance) {
 	// Determine if there's an intersection
 	float det = B*B - 4*C;
 	if (det < 0.0f)
-		return false;
+		return vec4(0.0f,0.0f,0.0f,1.0f);
 	else
-		return true;
+		return vec4(1.0f,0.0f,0.0f,1.0f);
 	//FOR FURTHER COMPUTATION
 	//	// Compute t1
 	//	float t1 = (-B + pow((B*B - 4*C),0.5)) / 2;
 	//	// Intersection point
 	//	vec3 Ri = vec3(Rp.x + Rd.x * t1, Rp.y + Rd.y * t1, Rp.z + Rd.z * t1);
+	// Obtengo la normal (vector del centro al punto de int)
+	// 
+
 }
 
 
@@ -50,47 +53,19 @@ bool intersectSphere(vec3 Sc, vec3 Rp, vec3 Rd, out float distance) {
 void main()
 {
 
-    vec3 sphereCenter = vec3(0,0,0);
+    vec3 sphereCenter = vec3(0,0,-3.0f);
+
+   // vec3 sphereWorld = (invVP * vec4(sphereCenter,1)).xyz;
 
 
-    vec3 sphereWorld = (mvp * vec4(sphereCenter,1)).xyz;
 
-    vec2 coord = (gl_FragCoord.xy + 0.5f) / windowSize;
+//    vec3 planeWorld = (invVP * vec4(coord,1,1)).xyz;
 
-    vec3 planeWorld = (mvp * vec4(coord,1,1)).xyz;
+    vec3 rayDir = normalize(vPos - eye);
 
-    vec3 rayDir = normalize(planeWorld - cameraPos);
+    fragColor = intersectSphere(sphereCenter, eye, rayDir);
 
-    float distance = 0;
+	//fragColor = vec4(vPos,1.0f);
 
-    if(intersectSphere(sphereWorld, cameraPos, rayDir, distance)){
-        fragColor = vec4(1,0,0,1);
-    }
-    else{
-        fragColor = vec4(0,1,0,1);
-    }
-
-    /*
-	vec4 Color = vec4(0.0f,0.0f,0.0f,1.0f);
-	vec2 coord = (gl_FragCoord.xy-windowSize.y) / windowSize;
-	vec3 rayDir = vec3(texture(renderedTexture,coord).xyz - vColor);
-	vec3 rayIn = vColor;
-	float D = length(rayDir);
-	rayDir = normalize(rayDir);
-
-	for(float i=0.0f;i<D;i+=1.0f/256){
-	// Ai y Ci se consultan en la TF 
-		Color.rgb += texture(volTexID,rayIn).r * vec3(texture(volTexID,rayIn).r) * Color.a;
-		Color.a *= 1 - texture(volTexID,rayIn).r;
-		if(1-Color.a >= 0.99f) break;
-		rayIn += rayDir*1.0f/256;
-	}
-	Color.a = 1.0f;
-	
-    */
-
-    //fragColor = vec4(1,0,0,1);
-    //vec2 windowSize = vec2(800,600);
-    //vec2 coord = (gl_FragCoord.xy) / windowSize;
     
 }
