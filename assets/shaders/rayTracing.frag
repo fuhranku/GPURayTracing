@@ -30,6 +30,7 @@ struct Intersect{
 	vec3 diffuse;
 	vec3 specular;
 	float t;
+	bool flag;
 };
 
 // Models
@@ -78,7 +79,7 @@ Intersect intersectSphere(vec3 Rp, vec3 Rd, Sphere sphere){
 	// Determine if there's an intersection by using determinant
 	float det = B*B - 4*C;
 	if (det < 0.0f)
-		return Intersect(vec3(0.0f,0.0f,100.0f),vec3(0.0f,0.0f,0.0f),vec3(0.0f,0.0f,0.0f),vec3(0.0f,0.0f,100.0f),10000f);
+		return Intersect(vec3(0.0f,0.0f,100.0f),vec3(0.0f,0.0f,0.0f),vec3(0.0f,0.0f,0.0f),vec3(0.0f,0.0f,100.0f),10000.0f,false);
 	else{
 		// Compute t
 		float t0 = (-B - pow(det,0.5f)) / 2;
@@ -87,7 +88,7 @@ Intersect intersectSphere(vec3 Rp, vec3 Rd, Sphere sphere){
 		// Compute sphere normal
 		vec3 normal = normalize(Ri - sphere.center);
 		sphere.normal = normal;
-		return Intersect(Ri,sphere.normal,sphere.diffuse,sphere.specular,t0);
+		return Intersect(Ri,sphere.normal,sphere.diffuse,sphere.specular,t0,true);
 	}
 
 }
@@ -99,17 +100,17 @@ Intersect intersectPlane(vec3 Rp, vec3 Rd, Plane plane){
 	float t = dot((plane.p0 - Rp),plane.n) / dot(Rd,plane.n);
 	// There's an intersection with the plane if t >= 0
 	if (t < 0.0f)
-		return Intersect(vec3(0.0f,0.0f,100.0f),vec3(0.0f,0.0f,0.0f),plane.diffuse,plane.specular,10000f);
+		return Intersect(vec3(0.0f,0.0f,100.0f),vec3(0.0f,0.0f,0.0f),plane.diffuse,plane.specular,10000.0f,false);
 	else{
 		vec3 Ri = Rp + Rd*t;
-		return Intersect(Ri,plane.n,plane.diffuse,plane.specular,t);
+		return Intersect(Ri,plane.n,plane.diffuse,plane.specular,t,true);
 	}
 }
 
 Intersect cast1stRay(vec3 Rp, vec3 Rd){
 	// Compare against all planes
 	Intersect mi, ret;
-	ret.t = 10000f;
+	ret.t = 10000.0f;
 	for (int i=0;i<6;i++){
 		mi = intersectPlane(Rp,Rd,plane[i]);
 		if (mi.t < ret.t) 
@@ -129,7 +130,7 @@ float shadowRay(vec3 Rp, vec3 Rd){
 	// Compare against all spheres
 	for (int i=0;i<2;i++){
 		mi = intersectSphere(Rp,Rd,sphere[i]);
-		if (mi.t != 10000f)
+		if (mi.flag)
 			return 0.0f;
 	}
 	return 1.0f;
@@ -141,7 +142,7 @@ void main(){
 	createScene();
 	//Intersect intersect = intersectSphere(sphereCenter, eye, rayDir);
 	Intersect intersect = cast1stRay(eye,rayDir);
-	float shadow = shadowRay(intersect.pos + intersect.normal*0.01f,normalize(lightPos-intersect.pos));
+	float shadow = shadowRay(intersect.pos + intersect.normal*0.9f,normalize(lightPos-intersect.pos));
 	// Attenuation
 //    float distance    = length(lightPos - intersect.pos);
 //    float attenuation = 1.0 / (0.5f + 0.8f * distance + 
