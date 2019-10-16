@@ -33,14 +33,14 @@ struct Intersect{
 };
 
 // Models
-Plane plane[5];
+Plane plane[6];
 Sphere sphere[2];
 
 // Fragment Color
 out vec4 fragColor;
 
 // Point light
-vec3 lightPos = vec3(0.0f,0.0f,1.0f);
+vec3 lightPos = vec3(0.0f,5.0f,0.0f);
 
 // Create scene function
 void createScene(){
@@ -50,12 +50,14 @@ void createScene(){
 		plane[0] = Plane(vec3(1.0f,0.0f,0.0f),vec3(-20.0f,0.0f,0.0f),vec3(1.0f,1.0f,1.0f),vec3(0.0f,1.0f,1.0f));
 		// Right-side wall
 		plane[1] = Plane(vec3(-1.0f,0.0f,0.0f),vec3(20.0f,0.0f,0.0f),vec3(1.0f,1.0f,1.0f),vec3(0.0f,1.0f,1.0f));
-		// Back-side wall
+		// front-side wall
 		plane[2] = Plane(vec3(0.0f,0.0f,1.0f),vec3(0.0f,0.0f,-20.0f),vec3(1.0f,1.0f,1.0f),vec3(0.0f,1.0f,1.0f));
 		// Top-side wall
 		plane[3] = Plane(vec3(0.0f,-1.0f,0.0f),vec3(0.0f,10.0f,0.0f),vec3(1.0f,1.0f,1.0f),vec3(0.0f,1.0f,1.0f));
 		// Bottom-side wall
 		plane[4] = Plane(vec3(0.0f,1.0f,0.0f),vec3(0.0f,-10.0f,0.0f),vec3(1.0f,1.0f,1.0f),vec3(0.0f,1.0f,1.0f));
+		// Back-side wall
+		plane[5] = Plane(vec3(0.0f,0.0f,1.0f),vec3(0.0f,0.0f,20.0f),vec3(1.0f,1.0f,1.0f),vec3(0.0f,1.0f,1.0f));
 	// Init spheres:
 		// Normal - center - diffuse - specular - radius
 		sphere[0] = Sphere(vec3(0.0f,0.0f,0.0f),vec3(-2.5f,0,-3.0f), vec3(1.0f,0.0f,0.0f),vec3(0.0f,1.0f,0.0f),1.5f);
@@ -81,7 +83,7 @@ Intersect intersectSphere(vec3 Rp, vec3 Rd, Sphere sphere){
 		// Compute t
 		float t0 = (-B - pow(det,0.5f)) / 2;
 		// Intersection point
-		vec3 Ri = vec3(Rp.x + Rd.x * t0, Rp.y + Rd.y * t0, Rp.z + Rd.z * t0);
+		vec3 Ri = Rp + Rd*t0;
 		// Compute sphere normal
 		vec3 normal = normalize(Ri - sphere.center);
 		sphere.normal = normal;
@@ -108,12 +110,12 @@ Intersect cast1stRay(vec3 Rp, vec3 Rd){
 	// Compare against all planes
 	Intersect mi, ret;
 	ret.t = 10000f;
-	for (int i=0;i<5;i++){
+	for (int i=0;i<6;i++){
 		mi = intersectPlane(Rp,Rd,plane[i]);
 		if (mi.t < ret.t) 
 			ret = mi;
 	}
-	// Compare agaisnt all spheres
+	// Compare against all spheres
 	for (int i=0;i<2;i++){
 		mi = intersectSphere(Rp,Rd,sphere[i]);
 		if (mi.t < ret.t)
@@ -122,12 +124,24 @@ Intersect cast1stRay(vec3 Rp, vec3 Rd){
 	return ret;
 }
 
+float shadowRay(vec3 Rp, vec3 Rd){
+	Intersect mi;
+	// Compare against all spheres
+	for (int i=0;i<2;i++){
+		mi = intersectSphere(Rp,Rd,sphere[i]);
+		if (mi.t != 10000f)
+			return 0.0f;
+	}
+	return 1.0f;
+}
+
 void main(){
     vec3 rayDir = normalize(vPos - eye);
 	// Creating scene
 	createScene();
 	//Intersect intersect = intersectSphere(sphereCenter, eye, rayDir);
 	Intersect intersect = cast1stRay(eye,rayDir);
+	float shadow = shadowRay(intersect.pos + intersect.normal*0.01f,normalize(lightPos-intersect.pos));
 	// Attenuation
 //    float distance    = length(lightPos - intersect.pos);
 //    float attenuation = 1.0 / (0.5f + 0.8f * distance + 
@@ -144,7 +158,7 @@ void main(){
 	// Specular contribution
 	vec3 specular = intersect.specular * spec;
 
-	vec3 result = diffuse + specular;
+	vec3 result = (diffuse + specular) * shadow;
     fragColor = vec4(result,1.0f);
 
 	//fragColor = vec4(vPos,1.0f);

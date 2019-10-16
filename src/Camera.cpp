@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-const float MOVEMENT_SPEED = 4.0f;
+const float MOVEMENT_SPEED = 12.0f;
 
 
 Camera::Camera() :
