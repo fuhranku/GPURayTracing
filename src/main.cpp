@@ -84,10 +84,10 @@ void buildGeometry(){
 	// Quad for debug purposes:
 	float quadVertices[] = {
 		// positions        // Color   		   // texture Coords
-		-1.0f,  1.0f, -0.5f,
-		-1.0f, -1.0f, -0.5f,
-		 1.0f,  1.0f, -0.5f,
-		 1.0f, -1.0f, -0.5f
+		-1.0f,  1.0f, 0.0f,
+		-1.0f, -1.0f, 0.0f,
+		 1.0f,  1.0f, 0.0f,
+		 1.0f, -1.0f, 0.0f
 	};
 	// Setup plane VAO
 	glGenVertexArrays(1, &VAO);
@@ -164,7 +164,6 @@ void processKeyboardInput(GLFWwindow *window){
 		rayTracingShader = new Shader("assets/shaders/rayTracing.vert", "assets/shaders/rayTracing.frag");
     }
 
-
 	if (cameraMode) {
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 			camera.moveForward(deltaTime);
@@ -184,8 +183,6 @@ void processKeyboardInput(GLFWwindow *window){
 		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 			camera.moveDown(deltaTime);
 	}
-
-
 }
 
 void onKeyPress(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -201,6 +198,14 @@ void onKeyPress(GLFWwindow *window, int key, int scancode, int action, int mods)
 				cameraMode = false;
 				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			}
+
+			break;
+		case GLFW_KEY_V:
+			rebounds++;
+			break;
+		case GLFW_KEY_B:
+			if (rebounds > 1)
+				rebounds--;
 		}
 	}
 }
@@ -227,6 +232,7 @@ void drawQuad(){
 	glm::mat4 invVP = glm::inverse(vp);
 	rayTracingShader->setMat4("invVP", invVP);
 	rayTracingShader->setVec3("eye", camera.position);
+	rayTracingShader->setInt("rebounds", rebounds);
 	//Binds the vertex array to be drawn
 	glBindVertexArray(VAO);
 	// Renders the triangle geometry

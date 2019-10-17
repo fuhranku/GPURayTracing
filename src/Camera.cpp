@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-const float MOVEMENT_SPEED = 12.0f;
+const float MOVEMENT_SPEED = 20.0f;
 
 
 Camera::Camera() :
@@ -25,34 +25,53 @@ glm::mat4 Camera::getWorldToViewMatrix() const {
 	return glm::lookAt(position, position + viewDirection, UP);
 }
 
+bool isAvalidPosition(glm::vec3 position) {
+	return position.x >= -9.0f  && position.x <= 9.0f &&
+		   position.y >= -6.0f  && position.y <= 6.0f &&
+		   position.z >= -29.0f && position.z <= 2.0f   
+	? true : false;
+}
+
 void Camera::moveForward(float time) {
 	float speed = MOVEMENT_SPEED * time;
-	position += speed * viewDirection;
+	glm::vec3 newPos = position + speed * viewDirection;
+	if (isAvalidPosition(newPos))
+		position = newPos;
 }
 
 void Camera::moveBackward(float time) {
 	float speed = MOVEMENT_SPEED * time;
-	position -= speed * viewDirection;
+	glm::vec3 newPos = position - speed * viewDirection;
+	if (isAvalidPosition(newPos))
+		position = newPos;
 }
 
 void Camera::moveLeft(float time) {
 	float speed = MOVEMENT_SPEED * time;
 	glm::vec3 moveDirection = glm::cross(viewDirection, UP);
-	position += -speed * moveDirection;
+	glm::vec3 newPos = position + (-speed) * moveDirection;
+	if (isAvalidPosition(newPos))
+		position = newPos;
 }
 
 void Camera::moveRight(float time) {
 	float speed = MOVEMENT_SPEED * time;
 	glm::vec3 moveDirection = glm::cross(viewDirection, UP);
-	position += speed * moveDirection;
+	glm::vec3 newPos = position + speed * moveDirection;
+	if (isAvalidPosition(newPos))
+		position = newPos;
 }
 
 void Camera::moveUp(float time) {
 	float speed = MOVEMENT_SPEED * time;
-	position += speed * UP;
+	glm::vec3 newPos = position + speed * UP;
+	if (isAvalidPosition(newPos))
+		position = newPos;
 }
 
 void Camera::moveDown(float time) {
 	float speed = MOVEMENT_SPEED * time;
-	position -= speed * UP;
+	glm::vec3 newPos = position - speed * UP;
+	if (isAvalidPosition(newPos))
+		position = newPos;
 }

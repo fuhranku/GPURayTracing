@@ -28,6 +28,7 @@ unsigned int textureID;
 float deltaTime = 0.0f, lastFrame = 0.0f;
 float mouseSpeed = 16.0f;
 bool cameraMode = false;
+int rebounds = 1;
 
 
 // MVP Matrices

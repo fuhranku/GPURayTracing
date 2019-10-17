@@ -3,10 +3,11 @@
 layout (location = 0) in vec3 vertexPosition;
 uniform mat4 invVP;
 // Vertex data out data
-out vec3 vPos;
+out vec3 screenPos;
 out mat4 ivp;
 void main()
 {
-    vPos = (invVP * vec4(vertexPosition,1.0f)).xyz;
+	vec4 vertex = invVP * vec4(vertexPosition,1.0f);
+    screenPos = vertex.xyz / vertex.w; 
     gl_Position =  vec4(vertexPosition, 1.0f);
 }
