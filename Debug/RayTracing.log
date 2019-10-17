@@ -1,2 +1,6 @@
 ﻿  main.cpp
+<<<<<<< HEAD
   RayTracing.vcxproj -> C:\Users\frank\Desktop\FCG\Proyecto\Debug\RayTracing.exe
+=======
+  RayTracing.vcxproj -> C:\Users\AlchenTheCat\Documents\Semestre VIII\Funciones y Tecnicas de Computacion Grafica\Proyecto Raytracing\GPURayTracing\Debug\RayTracing.exe
+>>>>>>> 44e0cf06524b64fbd0ba9db514c6547e5cc6baf3
