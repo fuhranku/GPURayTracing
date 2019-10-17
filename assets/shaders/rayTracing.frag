@@ -129,6 +129,32 @@ Intersect castRay(vec3 Rp, vec3 Rd){
 	return t0;
 }
 
+
+Intersect castRayRf(vec3 Rp, vec3 Rd){
+
+	// Compare against all planes
+	Intersect t0 = intersectPlane(Rp,Rd,plane[0]);
+	Intersect t1 = intersectPlane(Rp,Rd,plane[1]);
+	Intersect t2 = intersectPlane(Rp,Rd,plane[2]);
+	Intersect t3 = intersectPlane(Rp,Rd,plane[3]);
+	Intersect t4 = intersectPlane(Rp,Rd,plane[4]);
+	Intersect t5 = intersectPlane(Rp,Rd,plane[5]);
+	// Compare against all spheres
+	Intersect t6 = intersectSphere(Rp,Rd,sphere[0]);
+	//Intersect t7 = intersectSphere(Rp,Rd,sphere[1]);
+
+
+	t0 = (t0.t < 0.0f) || (t1.t > 0.0f && t1.t < t0.t) ? t1 : t0;
+	t0 = (t0.t < 0.0f) || (t2.t > 0.0f && t2.t < t0.t) ? t2 : t0;
+	t0 = (t0.t < 0.0f) || (t3.t > 0.0f && t3.t < t0.t) ? t3 : t0;
+	t0 = (t0.t < 0.0f) || (t4.t > 0.0f && t4.t < t0.t) ? t4 : t0;
+	t0 = (t0.t < 0.0f) || (t5.t > 0.0f && t5.t < t0.t) ? t5 : t0;
+	t0 = (t0.t < 0.0f) || (t6.t > 0.0f && t6.t < t0.t) ? t6 : t0;	
+	//t0 = (t0.t < 0.0f) || (t7.t > 0.0f && t7.t < t0.t) ? t7 : t0;
+
+	return t0;
+}
+
 /**
  * Compute fragment occlusion
  * @param{Rp} Ray position
@@ -230,26 +256,26 @@ void main(){
 		lights = mix(ambient,lights,vertex.t);
 
 		// Get reflection ray
-		vec3 rxRayDir = reflect(rayDir,vertex.normal);
+		vec3 rxRayDir = normalize(reflect(rayDir,vertex.normal));
 		reflex = castRay(vertex.pos + vertex.normal*0.001f,rxRayDir); 
 		reflex.t = reflex.t < 0.0f ? 0.0f : 1.0f;
 		
 		reflection += reflex.diffuse * vertex.rx_intensity * rayInt;
 		reflection = mix(ambient,reflection,reflex.t);
 
-
-
 		// Get refraction ray
-		vec3 rfRayDir = refract(rayDir,vertex.normal,1.3f/1.5f); 
-		_refract = castRay(vertex.pos + vertex.normal*0.001f,rfRayDir);
+		vec3 rfRayDir = normalize(refract(rayDir,vertex.normal,1.3f/1.1f)); 
+		_refract = castRayRf(vertex.pos + vertex.normal*0.001f,rfRayDir);
 		_refract.t  = _refract.t < 0.0f ? 0.0f : 1.0f;
 		refraction += _refract.diffuse * vertex.rf_intensity * rayInt;
 		refraction  = mix(ambient,refraction,_refract.t);
 
 		// Update ray position
 		rayOrigin = vertex.pos + vertex.normal*0.001f;
-		rayDir    = vertex.normal;
+		rayDir    = reflect(rayDir,vertex.normal);
 		rayInt -= 0.3f;
+
+		if(vertex.rx_intensity == 0.0f) break;
 	}
 
 	vec3 result = lights + reflection + refraction;
