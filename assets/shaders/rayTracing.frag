@@ -51,21 +51,21 @@ void createScene(){
 	// Init planes:
 		// Normal - p0 - diffuse - spec - rx intensity - rf intensity
 		// Left-side wall
-		plane[0] = Plane(vec3(1.0f,0.0f,0.0f),vec3(-10.0f,0.0f,0.0f),vec3(1.0f,0.0f,0.0f),vec3(0.0f,1.0f,1.0f),0.0f, 0.0f);
+		plane[0] = Plane(vec3(1.0f,0.0f,0.0f),vec3(-10.0f,0.0f,0.0f),vec3(1.0f,1.0f,1.0f),vec3(0.0f,1.0f,1.0f),0.0f, 0.0f);
 		// Right-side wall
-		plane[1] = Plane(vec3(-1.0f,0.0f,0.0f),vec3(10.0f,0.0f,0.0f),vec3(0.0f,1.0f,0.0f),vec3(0.0f,1.0f,1.0f),0.0f, 0.0f);
+		plane[1] = Plane(vec3(-1.0f,0.0f,0.0f),vec3(10.0f,0.0f,0.0f),vec3(1.0f,1.0f,1.0f),vec3(0.0f,1.0f,1.0f),0.0f, 0.0f);
 		// front-side wall
 		plane[2] = Plane(vec3(0.0f,0.0f,1.0f),vec3(0.0f,0.0f,-30.0f),vec3(0.0f,0.0f,1.0f),vec3(0.0f,1.0f,1.0f),0.5f, 0.0f);
 		// Top-side wall
-		plane[3] = Plane(vec3(0.0f,-1.0f,0.0f),vec3(0.0f,7.0f,0.0f),vec3(1.0f,1.0f,0.0f),vec3(0.0f,1.0f,1.0f),0.0f, 0.0f);
+		plane[3] = Plane(vec3(0.0f,-1.0f,0.0f),vec3(0.0f,7.0f,0.0f),vec3(1.0f,0.0f,0.0f),vec3(0.0f,1.0f,1.0f),0.0f, 0.0f);
 		// Bottom-side wall
-		plane[4] = Plane(vec3(0.0f,1.0f,0.0f),vec3(0.0f,-7.0f,0.0f),vec3(0.0f,1.0f,1.0f),vec3(0.0f,1.0f,1.0f),0.0f, 0.0f);
+		plane[4] = Plane(vec3(0.0f,1.0f,0.0f),vec3(0.0f,-7.0f,0.0f),vec3(1.0f,0.0f,1.0f),vec3(0.0f,1.0f,1.0f),0.0f, 0.0f);
 		// Back-side wall
-		plane[5] = Plane(vec3(0.0f,0.0f,-1.0f),vec3(0.0f,0.0f,2.0f),vec3(0.23f,0.5f,0.0f),vec3(0.0f,1.0f,1.0f),0.0f, 0.0f);
+		plane[5] = Plane(vec3(0.0f,0.0f,-1.0f),vec3(0.0f,0.0f,2.0f),vec3(0.0f,1.0f,0.0f),vec3(0.0f,1.0f,1.0f),0.0f, 0.0f);
 	// Init spheres:
 		// Normal - center - diffuse - specular - radius
 		sphere[0] = Sphere(vec3(0.0f,0.0f,0.0f),vec3(-2.5f,0,-25.0f), vec3(1.0f,0.0f,0.0f),vec3(1.0f,0.0f,0.0f),1.5f,1.0f, 0.0f);
-		sphere[1] = Sphere(vec3(0.0f,0.0f,0.0f),vec3(2.5f,0,-25.0f), vec3(1.0f,0.0f,1.0f),vec3(1.0f,0.0f,0.0f),1.0f,0.0f, 1.0f);
+		sphere[1] = Sphere(vec3(0.0f,0.0f,0.0f),vec3(2.5f,0,-25.0f), vec3(1.0f,1.0f,1.0f),vec3(1.0f,0.0f,0.0f),1.0f,0.0f, 1.0f);
 }
 
 
@@ -82,7 +82,7 @@ Intersect intersectSphere(vec3 Rp, vec3 Rd, Sphere sphere){
 	// Determine if there's an intersection by using determinant
 	float det = B*B - 4*C;
 	if (det < 0.0f)
-		return Intersect(vec3(0.0f),vec3(0.0f),vec3(0.0f),vec3(0.0f),-1.0f,0.0f,0.0f);
+		return Intersect(vec3(0.0f),vec3(0.0f),vec3(1.0f),vec3(0.0f),-1.0f,0.0f,0.0f);
 	// Compute t
 	float t = (-B - pow(det,0.5f)) / 2;
 	// Intersection point
@@ -100,7 +100,7 @@ Intersect intersectPlane(vec3 Rp, vec3 Rd, Plane plane){
 	float t = dot((plane.p0 - Rp),plane.n) / dot(Rd,plane.n);
 	// There's an intersection with the plane if t >= 0
 	if (t < 0.0f)
-		return Intersect(vec3(0.0f),vec3(0.0f),vec3(0.0f),vec3(0.0f),-1.0f,0.0f,0.0f);
+		return Intersect(vec3(0.0f),vec3(0.0f),vec3(1.0f),vec3(0.0f),-1.0f,0.0f,0.0f);
 	vec3 Ri = Rp + Rd*t;
 	return Intersect(Ri,plane.n,plane.diffuse,plane.specular,t,plane.rx_intensity,plane.rf_intensity);
 }
@@ -223,6 +223,8 @@ void main(){
 	vec3 lights = vec3(0.0f);
 	vec3 reflection = vec3(0.0f);
 	vec3 refraction = vec3(0.0f);
+	vec3 maskColor = vec3(1.0f);
+	vec3 result = vec3(0.0f);
 
 	// Rebounds loops
 	for (int i=0;i<rebounds;i++){
@@ -234,7 +236,7 @@ void main(){
 		vec3 sRayDir = lightPos-vertex.pos;
 		float sRayLength = length(sRayDir);
 		sRayDir = normalize(sRayDir);
-		// Compute shadow
+		// Compute shadow of primary ray
 		float shadow = castShadowRay(vertex.pos + vertex.normal*0.001f,sRayDir,sRayLength);
 		
 		// Compute light direction
@@ -259,26 +261,53 @@ void main(){
 		vec3 rxRayDir = normalize(reflect(rayDir,vertex.normal));
 		reflex = castRay(vertex.pos + vertex.normal*0.001f,rxRayDir); 
 		reflex.t = reflex.t < 0.0f ? 0.0f : 1.0f;
-		
-		reflection += reflex.diffuse * vertex.rx_intensity * rayInt;
+
+		// Get shadow ray for reflection ray
+		sRayDir = lightPos-reflex.pos;
+		sRayLength = length(sRayDir);
+		sRayDir = normalize(sRayDir);
+
+		// Compute shadow of reflection ray
+		shadow = castShadowRay(reflex.pos + reflex.normal*0.001f,sRayDir,sRayLength);
+
+		// Compute light contribution of reflection ray
+		computeLight(lightPos,lightDir,rxRayDir,reflex,diffuse,specular);
+
+		reflection += diffuse + specular;
+		reflection *= vertex.rx_intensity * shadow * rayInt;
 		reflection = mix(ambient,reflection,reflex.t);
 
 		// Get refraction ray
-		vec3 rfRayDir = normalize(refract(rayDir,vertex.normal,1.3f/1.1f)); 
+		vec3 rfRayDir = normalize(refract(rayDir,vertex.normal,1.0f/0.5f)); 
 		_refract = castRayRf(vertex.pos + vertex.normal*0.001f,rfRayDir);
 		_refract.t  = _refract.t < 0.0f ? 0.0f : 1.0f;
-		refraction += _refract.diffuse * vertex.rf_intensity * rayInt;
+
+		// Get shadow ray for refraction ray
+		sRayDir = lightPos-_refract.pos;
+		sRayLength = length(sRayDir);
+		sRayDir = normalize(sRayDir);
+
+		// Compute shadow of refraction rayr
+		shadow = castShadowRay(_refract.pos + _refract.normal*0.001f,sRayDir,sRayLength);
+
+		// Compute light contribution of refraction ray
+		computeLight(lightPos,lightDir,rfRayDir,_refract,diffuse,specular);
+
+		refraction += _refract.diffuse + _refract.specular; 
+		refraction *= vertex.rf_intensity * shadow * rayInt;
 		refraction  = mix(ambient,refraction,_refract.t);
 
 		// Update ray position
 		rayOrigin = vertex.pos + vertex.normal*0.001f;
 		rayDir    = reflect(rayDir,vertex.normal);
-		rayInt -= 0.3f;
+		//rayInt -= 0.3f;
+
+		maskColor += vertex.diffuse*0.5f ;
+		result += (lights + reflection + refraction) * maskColor;
 
 		if(vertex.rx_intensity == 0.0f) break;
 	}
 
-	vec3 result = lights + reflection + refraction;
 	// Gamma correction
 	result = result / (result + vec3(1.0));
 	result = pow(result, vec3(1.0/2.2)); 
