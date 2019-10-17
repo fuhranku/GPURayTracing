@@ -35,12 +35,8 @@ struct Intersect{
 	vec3 diffuse;
 	vec3 specular;
 	float t;
-<<<<<<< HEAD
 	float rx_intensity;
 	float rf_intensity;
-=======
-	bool flag;
->>>>>>> 44e0cf06524b64fbd0ba9db514c6547e5cc6baf3
 };
 
 // Models
@@ -86,7 +82,6 @@ Intersect intersectSphere(vec3 Rp, vec3 Rd, Sphere sphere){
 	// Determine if there's an intersection by using determinant
 	float det = B*B - 4*C;
 	if (det < 0.0f)
-<<<<<<< HEAD
 		return Intersect(vec3(0.0f),vec3(0.0f),vec3(0.0f),vec3(0.0f),-1.0f,0.0f,0.0f);
 	// Compute t
 	float t = (-B - pow(det,0.5f)) / 2;
@@ -96,20 +91,6 @@ Intersect intersectSphere(vec3 Rp, vec3 Rd, Sphere sphere){
 	vec3 normal = normalize(Ri - sphere.center);
 	sphere.normal = normal;
 	return Intersect(Ri,sphere.normal,sphere.diffuse,sphere.specular,t,sphere.rx_intensity,sphere.rf_intensity);
-=======
-		return Intersect(vec3(0.0f,0.0f,100.0f),vec3(0.0f,0.0f,0.0f),vec3(0.0f,0.0f,0.0f),vec3(0.0f,0.0f,100.0f),10000.0f,false);
-	else{
-		// Compute t
-		float t0 = (-B - pow(det,0.5f)) / 2;
-		// Intersection point
-		vec3 Ri = Rp + Rd*t0;
-		// Compute sphere normal
-		vec3 normal = normalize(Ri - sphere.center);
-		sphere.normal = normal;
-		return Intersect(Ri,sphere.normal,sphere.diffuse,sphere.specular,t0,true);
-	}
-
->>>>>>> 44e0cf06524b64fbd0ba9db514c6547e5cc6baf3
 }
 
 Intersect intersectPlane(vec3 Rp, vec3 Rd, Plane plane){
@@ -119,37 +100,19 @@ Intersect intersectPlane(vec3 Rp, vec3 Rd, Plane plane){
 	float t = dot((plane.p0 - Rp),plane.n) / dot(Rd,plane.n);
 	// There's an intersection with the plane if t >= 0
 	if (t < 0.0f)
-<<<<<<< HEAD
 		return Intersect(vec3(0.0f),vec3(0.0f),vec3(0.0f),vec3(0.0f),-1.0f,0.0f,0.0f);
 	vec3 Ri = Rp + Rd*t;
 	return Intersect(Ri,plane.n,plane.diffuse,plane.specular,t,plane.rx_intensity,plane.rf_intensity);
-=======
-		return Intersect(vec3(0.0f,0.0f,100.0f),vec3(0.0f,0.0f,0.0f),plane.diffuse,plane.specular,10000.0f,false);
-	else{
-		vec3 Ri = Rp + Rd*t;
-		return Intersect(Ri,plane.n,plane.diffuse,plane.specular,t,true);
-	}
->>>>>>> 44e0cf06524b64fbd0ba9db514c6547e5cc6baf3
 }
 
 Intersect castRay(vec3 Rp, vec3 Rd){
 	// Compare against all planes
-<<<<<<< HEAD
 	Intersect t0 = intersectPlane(Rp,Rd,plane[0]);
 	Intersect t1 = intersectPlane(Rp,Rd,plane[1]);
 	Intersect t2 = intersectPlane(Rp,Rd,plane[2]);
 	Intersect t3 = intersectPlane(Rp,Rd,plane[3]);
 	Intersect t4 = intersectPlane(Rp,Rd,plane[4]);
 	Intersect t5 = intersectPlane(Rp,Rd,plane[5]);
-=======
-	Intersect mi, ret;
-	ret.t = 10000.0f;
-	for (int i=0;i<6;i++){
-		mi = intersectPlane(Rp,Rd,plane[i]);
-		if (mi.t < ret.t) 
-			ret = mi;
-	}
->>>>>>> 44e0cf06524b64fbd0ba9db514c6547e5cc6baf3
 	// Compare against all spheres
 	Intersect t6 = intersectSphere(Rp,Rd,sphere[0]);
 	Intersect t7 = intersectSphere(Rp,Rd,sphere[1]);
@@ -177,7 +140,6 @@ float castShadowRay(vec3 Rp, vec3 Rd, float Rl){
 	vec3 sRp, sRd;
 	float sRl;
 	for (int i=0;i<2;i++){
-<<<<<<< HEAD
 		t0 = intersectSphere(Rp,Rd,sphere[i]);
 		if (t0.t < 0.0f) continue;
 		// Compute ray_origin-shadow_intersect ray
@@ -186,11 +148,6 @@ float castShadowRay(vec3 Rp, vec3 Rd, float Rl){
 		sRl = length(sRd);
 		if ( sRl < Rl ) 
 			return 0.1f;
-=======
-		mi = intersectSphere(Rp,Rd,sphere[i]);
-		if (mi.flag)
-			return 0.0f;
->>>>>>> 44e0cf06524b64fbd0ba9db514c6547e5cc6baf3
 	}
 	return 1.0f;
 }
@@ -234,7 +191,6 @@ void main(){
 	vec3 lightPos = vec3(0.0f,5.0f,-25.0f);
 	// Creating scene
 	createScene();
-<<<<<<< HEAD
 	// Intersect vertex
 	Intersect vertex, reflex, _refract;
 	// Color source contribution vectors
@@ -301,28 +257,6 @@ void main(){
 	result = result / (result + vec3(1.0));
 	result = pow(result, vec3(1.0/2.2)); 
 
-=======
-	//Intersect intersect = intersectSphere(sphereCenter, eye, rayDir);
-	Intersect intersect = cast1stRay(eye,rayDir);
-	float shadow = shadowRay(intersect.pos + intersect.normal*0.9f,normalize(lightPos-intersect.pos));
-	// Attenuation
-//    float distance    = length(lightPos - intersect.pos);
-//    float attenuation = 1.0 / (0.5f + 0.8f * distance + 
-//                        0.4f * (distance * distance)); 
-	// Blinn Phong
-		vec3 lightDir = normalize(lightPos - intersect.pos);
-		// Diffuse component (LAMBERT)
-		float diff = clamp(dot(intersect.normal,lightDir),0.0f,1.0f);
-		// Specular component
-		vec3 halfwayDir = normalize(lightDir+rayDir);
-		float spec = pow(clamp(dot(intersect.normal,halfwayDir),0.0f,1.0f),2.0f);
-	// Diffuse contribution
-	vec3 diffuse = intersect.diffuse * diff;
-	// Specular contribution
-	vec3 specular = intersect.specular * spec;
-
-	vec3 result = (diffuse + specular) * shadow;
->>>>>>> 44e0cf06524b64fbd0ba9db514c6547e5cc6baf3
     fragColor = vec4(result,1.0f);
 
 	//fragColor = vec4(vPos,1.0f);
